@@ -1,0 +1,31 @@
+a:hover{
+    color: #0da8e4
+}
+
+a{
+    text-decoration: none;
+}
+
+ul{
+    list-style-type: none;
+}
+
+
+.navbar-side{
+    padding-left: 20px;
+    font-size:16px;
+}
+
+.active-link {
+    font-weight: bold;
+}
+
+ul{
+    list-style-type: none;
+}
+
+.navbar-side a {
+    position: relative;
+    z-index: 10;
+  }
+  
