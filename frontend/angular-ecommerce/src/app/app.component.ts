@@ -4,7 +4,6 @@ import { ProductListComponent } from './components/product-list/product-list.com
 import { ProductCategoryMenuComponent } from './components/product-category-menu/product-category-menu.component';
 import { SearchComponent } from './components/search/search.component';
 
-
 @Component({
   selector: 'app-root',
   standalone: true,
