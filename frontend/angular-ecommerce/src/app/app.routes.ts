@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ProductListComponent } from './components/product-list/product-list.component';
+import { ProductDetailsComponent } from './components/product-details/product-details.component';
 
 
 //app.routes.ts: Defines the routes for your application.
@@ -9,6 +10,7 @@ import { ProductListComponent } from './components/product-list/product-list.com
 
 //Specifying routes from most specific to generic
 export const routes: Routes = [
+    {path: 'products/:id', component: ProductDetailsComponent},
     {path: 'search/:keyword', component: ProductListComponent},
     {path: 'category/:id/:name', component: ProductListComponent},
     {path: 'category', component: ProductListComponent},
