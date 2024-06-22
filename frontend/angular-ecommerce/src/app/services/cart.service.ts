@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CartItem } from '../common/cart-item';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +15,21 @@ export class CartService {
   //Behaviour Subject will subscribe to the latest event
   totalPrice: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   totalQuantity: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  //storage: Storage = sessionStorage; //Refrence to web browser's session storage
+  //Use local storage instead of session storage
+  storage: Storage = localStorage;
 
-  constructor() { }
+  constructor() {
+    //read data from storage
+    //Read JSON string and converts to object
+    let data = JSON.parse(this.storage.getItem('cartItems')!);
+    if(data!=null){
+      this.cartItems = data;
+
+      //compute totals based on data that is read from storage
+      this.computeCartTotals();
+    }
+   }
 
   addToCart(theCartItem: CartItem){
     //check if we already have the item in our cart
@@ -52,6 +65,10 @@ export class CartService {
     //compute cart total price and total quantity
     this.computeCartTotals();
   }
+
+  persistCartItems(){
+    this.storage.setItem('cartItems', JSON.stringify(this.cartItems));
+  }
   
   computeCartTotals() {
     let totalPriceValue: number = 0;
@@ -70,6 +87,9 @@ export class CartService {
 
     //log cart data just for debugging purpose
     this.logCartData(totalPriceValue, totalQuantityValue);
+    
+    //persist cart data
+    this.persistCartItems();
   }
 
   logCartData(totalPriceValue: number, totalQuantityValue: number){
