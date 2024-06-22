@@ -3,6 +3,8 @@ import { ProductListComponent } from './components/product-list/product-list.com
 import { ProductDetailsComponent } from './components/product-details/product-details.component';
 import { CartDetailsComponent } from './components/cart-details/cart-details.component';
 import { CheckoutComponent } from './components/checkout/checkout.component';
+import { OktaCallbackComponent } from '@okta/okta-angular';
+import { LoginComponent } from './components/login/login.component';
 
 
 //app.routes.ts: Defines the routes for your application.
@@ -12,6 +14,8 @@ import { CheckoutComponent } from './components/checkout/checkout.component';
 
 //Specifying routes from most specific to generic
 export const routes: Routes = [
+    {path: 'login/callback', component: OktaCallbackComponent },
+    {path: 'login', component: LoginComponent},
     {path: 'checkout', component: CheckoutComponent},
     {path: 'cart-details', component: CartDetailsComponent},
     {path: 'products/:id', component: ProductDetailsComponent},
