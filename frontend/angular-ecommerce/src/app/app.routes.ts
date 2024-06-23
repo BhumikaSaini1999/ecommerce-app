@@ -8,6 +8,7 @@ import { LoginComponent } from './components/login/login.component';
 import { MembersPageComponent } from './components/members-page/members-page.component';
 import OktaAuth from '@okta/okta-auth-js';
 import { Injector } from '@angular/core';
+import { OrderHistoryComponent } from './components/order-history/order-history.component';
 
 
 //app.routes.ts: Defines the routes for your application.
@@ -25,6 +26,11 @@ router.navigate(['/login']);
 
 //Specifying routes from most specific to generic
 export const routes: Routes = [
+    //if authenticated give access to route else send to login page
+    {path: 'order-history', component: OrderHistoryComponent, canActivate: [OktaAuthGuard], data:{
+      onAuthRequired: sendToLoginPage
+    } },
+
     //if authenticated give access to route else send to login page
     {path: 'members', component: MembersPageComponent, canActivate: [OktaAuthGuard], data:{
       onAuthRequired: sendToLoginPage

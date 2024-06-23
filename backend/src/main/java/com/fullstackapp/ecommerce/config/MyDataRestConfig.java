@@ -1,9 +1,6 @@
 package com.fullstackapp.ecommerce.config;
 
-import com.fullstackapp.ecommerce.entity.Country;
-import com.fullstackapp.ecommerce.entity.Product;
-import com.fullstackapp.ecommerce.entity.ProductCategory;
-import com.fullstackapp.ecommerce.entity.State;
+import com.fullstackapp.ecommerce.entity.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.metamodel.EntityType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +44,9 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
 
         // disable Http Methods for State: PUT, POST, DELETE
         disableHttpMethods(State.class, config, cors, theUnsupportedActions);
+
+        // disable Http Methods for Order: PUT, POST, DELETE
+        disableHttpMethods(Order.class, config, cors, theUnsupportedActions);
 
         // call an internal helper method to expose id's for product-category
         exposeIds(config);
