@@ -9,6 +9,6 @@ import com.fullstackapp.ecommerce.entity.Order;
 
 @RepositoryRestResource
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    //most recent date will be displayed first
+    //most recent date will be displayed first, rest endpoint only available to authenticated users
     Page<Order> findByCustomerEmailOrderByDateCreatedDesc(@Param("email") String email, Pageable pageable);
 }
