@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 //Customer has a collection of orders
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
+    //SELECT * from Customer c WHERE c.email = theEmail
+    Customer findByEmail(String email);
 }
