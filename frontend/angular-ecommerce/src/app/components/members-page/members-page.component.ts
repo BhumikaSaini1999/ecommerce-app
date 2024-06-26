@@ -11,8 +11,7 @@ export class MembersPageComponent implements OnInit{
 
   constructor(){}
   
-  ngOnInit(): void {
-    throw new Error('Method not implemented.');
+  ngOnInit(){
   }
 
 }

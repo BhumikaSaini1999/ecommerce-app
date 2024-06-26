@@ -6,6 +6,7 @@ import { SearchComponent } from './components/search/search.component';
 import { CartStatusComponent } from './components/cart-status/cart-status.component';
 import { LoginStatusComponent } from './components/login-status/login-status.component';
 import { OktaAuthModule } from '@okta/okta-angular';
+import { AuthInterceptorService } from './services/auth-interceptor.service';
 
 @Component({
   selector: 'app-root',

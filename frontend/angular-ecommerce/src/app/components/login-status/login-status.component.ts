@@ -37,6 +37,7 @@ export class LoginStatusComponent implements OnInit{
   getUserDetails() {
     if(this.isAuthenticated){
       console.log("User is authenticated!!")
+      console.log("Access Token: "+this.oktaAuth.getAccessToken());
       //Fetch the logged in user details (user's claim)
       //user full name is exposed as a property name
       this.oktaAuth.getUser().then(

@@ -3,15 +3,15 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs'; //Reactive Javascript Framework
 import { Country } from '../common/country';
 import { map } from 'rxjs/operators';
-import { response } from 'express';
 import { State } from '../common/state';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Luv2ShopFormService {
-  private countriesUrl = "http://localhost:9898/api/countries";
-  private statesUrl = "http://localhost:9898/api/states";
+  private countriesUrl = environment.luv2shopApiUrl + '/countries';
+  private statesUrl = environment.luv2shopApiUrl + '/states';
 
   constructor(private httpClient: HttpClient) { }
 
