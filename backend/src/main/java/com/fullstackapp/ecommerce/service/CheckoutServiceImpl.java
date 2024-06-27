@@ -1,15 +1,18 @@
 package com.fullstackapp.ecommerce.service;
 
 import com.fullstackapp.ecommerce.dao.CustomerRepository;
+import com.fullstackapp.ecommerce.dto.PaymentInfo;
 import com.fullstackapp.ecommerce.dto.Purchase;
 import com.fullstackapp.ecommerce.dto.PurchaseResponse;
 import com.fullstackapp.ecommerce.entity.Customer;
 import com.fullstackapp.ecommerce.entity.Order;
 import com.fullstackapp.ecommerce.entity.OrderItem;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
 import jakarta.transaction.Transactional;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,10 +20,12 @@ import java.util.UUID;
 public class CheckoutServiceImpl implements CheckoutService{
 
     private CustomerRepository customerRepository;
+    private RazorpayClient razorpayClient;
 
     @Autowired //optional we have only one constructor
-    public CheckoutServiceImpl(CustomerRepository customerRepository) {
+    public CheckoutServiceImpl(CustomerRepository customerRepository, RazorpayClient razorpayClient) {
         this.customerRepository = customerRepository;
+        this.razorpayClient = razorpayClient;
     }
 
     @Override
@@ -58,6 +63,14 @@ public class CheckoutServiceImpl implements CheckoutService{
 
         //return a response
         return new PurchaseResponse(orderTrackingNumber);
+    }
+
+    @Override
+    public com.razorpay.Order createOrder(PaymentInfo paymentInfo) throws RazorpayException {
+        JSONObject orderRequest = new JSONObject();
+        orderRequest.put("amount", paymentInfo.getAmount());
+        orderRequest.put("currency", paymentInfo.getCurrency());
+        return razorpayClient.orders.create(orderRequest);
     }
 
     private String generateOrderTrackingNumber() {

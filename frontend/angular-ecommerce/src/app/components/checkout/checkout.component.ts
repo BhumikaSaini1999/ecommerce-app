@@ -11,6 +11,9 @@ import { Router } from '@angular/router';
 import { Order } from '../../common/order';
 import { OrderItem } from '../../common/order-item';
 import { Purchase } from '../../common/purchase';
+import { PaymentInfo } from '../../common/payment-info';
+
+declare var Razorpay: any;
 
 @Component({
   selector: 'app-checkout',
@@ -32,6 +35,8 @@ export class CheckoutComponent implements OnInit{
   billingAddressStates: State[] = [];
 
   storage: Storage = sessionStorage;
+
+  paymentInfo: PaymentInfo = new PaymentInfo();
 
   constructor(private formBuilder: FormBuilder, private luv2ShopFormService: Luv2ShopFormService, 
     private cartService: CartService, 
@@ -69,35 +74,35 @@ export class CheckoutComponent implements OnInit{
         state: new FormControl('',[Validators.required]),
         country: new FormControl('',[Validators.required]),
         zipcode: new FormControl('',[Validators.required, Validators.minLength(2), Luv2ShopValidators.notOnlyWhitespace]),
-      }),
-      creditCard: this.formBuilder.group({
-        cardType: new FormControl('',[Validators.required]),
-        nameOnCard: new FormControl('',[Validators.required, Validators.minLength(2), Luv2ShopValidators.notOnlyWhitespace]),
-        cardNumber: new FormControl('',[Validators.required, Validators.pattern('[0-9]{16}')]),
-        securityCode: new FormControl('',[Validators.required, Validators.pattern('[0-9]{3}')]),
-        expirationMonth: [''],
-        expirationYear: ['']
       })
+      // creditCard: this.formBuilder.group({
+      //   cardType: new FormControl('',[Validators.required]),
+      //   nameOnCard: new FormControl('',[Validators.required, Validators.minLength(2), Luv2ShopValidators.notOnlyWhitespace]),
+      //   cardNumber: new FormControl('',[Validators.required, Validators.pattern('[0-9]{16}')]),
+      //   securityCode: new FormControl('',[Validators.required, Validators.pattern('[0-9]{3}')]),
+      //   expirationMonth: [''],
+      //   expirationYear: ['']
+      // })
     });
 
     //populate credit card months
-    const startMonth: number = new Date().getMonth()+1;
-    console.log("startMonth: "+startMonth);
+    // const startMonth: number = new Date().getMonth()+1;
+    // console.log("startMonth: "+startMonth);
 
-    this.luv2ShopFormService.getCreditCardMonths(startMonth).subscribe(
-      data => {
-        console.log("Retrieved credit card months: "+JSON.stringify(data));
-        this.creditCardMonths = data;
-      }
-    );
+    // this.luv2ShopFormService.getCreditCardMonths(startMonth).subscribe(
+    //   data => {
+    //     console.log("Retrieved credit card months: "+JSON.stringify(data));
+    //     this.creditCardMonths = data;
+    //   }
+    // );
 
     //populate credit card years
-    this.luv2ShopFormService.getCreditCardYears().subscribe(
-      data => {
-        console.log("Retrieved credit card years: "+JSON.stringify(data));
-        this.creditCardYears = data;
-      }
-    );
+    // this.luv2ShopFormService.getCreditCardYears().subscribe(
+    //   data => {
+    //     console.log("Retrieved credit card years: "+JSON.stringify(data));
+    //     this.creditCardYears = data;
+    //   }
+    // );
 
     //populate countries
     this.luv2ShopFormService.getCountries().subscribe(
@@ -188,21 +193,71 @@ export class CheckoutComponent implements OnInit{
     purchase.order = order;
     purchase.orderItems = orderItems;
 
-    //call REST API via CheckoutService
-    this.checkoutService.placeOrder(purchase).subscribe({
-        //success/happy
-        next: response => {
-          alert(`your order has been received.\n Order tracking number: ${ response.orderTrackingNumber }`)
+   
+     //compute payment info
+     this.paymentInfo.amount = Math.round(this.totalPrice * 100);
+     this.paymentInfo.currency = "INR";
+ 
+     console.log(`this.paymentInfo.amount: ${this.paymentInfo.amount}`);
 
-          //reset cart
-          this.resetCart();
-        },
-        //error/exception
-        error: err => {
-          alert(`There was an error: ${err.messages}`);
-        }
+    //call REST API via CheckoutService
+    // this.checkoutService.placeOrder(purchase).subscribe({
+    //     //success/happy
+    //     next: response => {
+    //       alert(`your order has been received.\n Order tracking number: ${ response.orderTrackingNumber }`)
+
+    //       //reset cart
+    //       this.resetCart();
+    //     },
+    //     //error/exception
+    //     error: err => {
+    //       alert(`There was an error: ${err.messages}`);
+    //     }
+    //   }
+    // );
+
+    //create razorpay payment order and place the purchase order
+    this.checkoutService.createOrder(this.paymentInfo).subscribe(
+      (orderResponse) => {
+        const options = {
+          key: 'rzp_test_21ME8BDB1Ey67B',
+          amount: this.paymentInfo.amount,
+          currency: 'INR',
+          name: 'Luv2Code Ecommerce App',
+          description: 'Test Transaction',
+          order_id: orderResponse.id,
+          handler: (response: any) => {
+            // Handle the response after payment success
+            console.log(response);
+            // You can navigate to a success page or call your backend to verify the payment
+            this.checkoutService.placeOrder(purchase).subscribe({
+              next: (response: any) => {
+                alert(`Your order has been received.\n Order tracking number: ${response.orderTrackingNumber}`);
+
+                //reset cart
+                this.resetCart();
+              },
+              error: (err: any)=>{
+                alert(`There was an error: ${err.message}`);
+              }
+            })
+          },
+          prefill: {
+            name: `${purchase.customer?.firstName} ${purchase.customer?.lastName}`,
+            email: purchase.customer?.email
+          },
+          notes: {
+            address: "Yamunanagar, Haryana"
+          },
+          theme: {
+            color: '#3399cc'
+          }
+        }; 
+        const rzp1 = new Razorpay(options);
+        rzp1.open();
       }
     );
+
 
     // console.log(this.checkoutFormGroup.get('customer')?.value);
     // console.log("The email address is "+this.checkoutFormGroup.get('customer')?.value.email);
@@ -215,6 +270,7 @@ export class CheckoutComponent implements OnInit{
     this.cartService.cartItems = [];
     this.cartService.totalPrice.next(0);
     this.cartService.totalQuantity.next(0);
+    this.cartService.persistCartItems(); //updates the storage with latest cart items
 
     //reset the form
     this.checkoutFormGroup.reset();
@@ -322,19 +378,19 @@ export class CheckoutComponent implements OnInit{
     return this.checkoutFormGroup.get('billingAddress.zipcode');
   }
 
-  get creditCardType(){
-    return this.checkoutFormGroup.get('creditCard.cardType');
-  }
+  // get creditCardType(){
+  //   return this.checkoutFormGroup.get('creditCard.cardType');
+  // }
 
-  get creditCardNameOnCard(){
-    return this.checkoutFormGroup.get('creditCard.nameOnCard');
-  }
+  // get creditCardNameOnCard(){
+  //   return this.checkoutFormGroup.get('creditCard.nameOnCard');
+  // }
 
-  get creditCardNumber(){
-    return this.checkoutFormGroup.get('creditCard.cardNumber');
-  }
+  // get creditCardNumber(){
+  //   return this.checkoutFormGroup.get('creditCard.cardNumber');
+  // }
 
-  get creditCardSecurityCode(){
-    return this.checkoutFormGroup.get('creditCard.securityCode');
-  }
+  // get creditCardSecurityCode(){
+  //   return this.checkoutFormGroup.get('creditCard.securityCode');
+  // }
 }
